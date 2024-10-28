@@ -1,50 +1,85 @@
 import { User } from '../types/user';
-import { redis } from '../redis';
+import { getRedisClient } from '../redis/config';
 import bcrypt from 'bcrypt';
 import { generateId } from 'ai';
 
 export async function signUp(username: string, email: string, password: string): Promise<User> {
+  const redis = await getRedisClient();
+  
+  // Check if email already exists
+  const existingUser = await redis.hgetall(`users:email:${email}`);
+  if (existingUser && existingUser.userId) {
+    throw new Error('Email already registered');
+  }
+
   // Hash password
   const passwordHash = await bcrypt.hash(password, 10);
-
-  // Store in Redis
   const userId = generateId();
-  await redis.set(`users:${userId}`, JSON.stringify({
-    id: userId,
-    username,
-    email,
-    passwordHash,
-    createdAt: new Date().toISOString(),
-  }));
-  await redis.set(`users:email:${email}`, userId);
-
-  // Return user object
-  return {
+  
+  const user: User = {
     id: userId,
     username,
     email,
     createdAt: new Date(),
-    passwordHash, 
+    passwordHash
   };
+
+  try {
+    // Store user data
+    await redis.hmset(`users:${userId}`, {
+      ...user,
+      createdAt: user.createdAt.toISOString()
+    });
+    
+    // Store email lookup
+    await redis.hmset(`users:email:${email}`, { userId });
+
+    return user;
+  } catch (error) {
+    console.error('Error during signup:', error);
+    throw new Error('Failed to create user');
+  }
 }
 
 export async function login(email: string, password: string): Promise<User> {
-  // Verify credentials
-  const userId = await redis.get(`users:email:${email}`);
-  if (!userId) {
-    throw new Error('Invalid email or password');
-  }
+  const redis = await getRedisClient();
 
-  const user = JSON.parse(await redis.get(`users:${userId}`)) as User;
-  const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-  if (!isValidPassword) {
-    throw new Error('Invalid email or password');
-  }
+  try {
+    // Get userId from email lookup
+    const userIdObj = await redis.hgetall<Record<string, string>>(`users:email:${email}`);
+    if (!userIdObj || !userIdObj.userId) {
+      throw new Error('Invalid email or password');
+    }
 
-  // Return user object
-  return user;
+    // Get user data
+    const userObj = await redis.hgetall<Record<string, string>>(`users:${userIdObj.userId}`);
+    if (!userObj) {
+      throw new Error('Invalid email or password');
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, userObj.passwordHash);
+    if (!isValidPassword) {
+      throw new Error('Invalid email or password');
+    }
+
+    // Convert stored date string back to Date object
+    const user: User = {
+      id: userObj.id,
+      username: userObj.username,
+      email: userObj.email,
+      passwordHash: userObj.passwordHash,
+      createdAt: new Date(userObj.createdAt)
+    };
+
+    return user;
+  } catch (error) {
+    console.error('Error during login:', error);
+    throw error;
+  }
 }
 
-export async function logout() {
-  // Clear session
+export async function logout(): Promise<void> {
+  // Implement session clearing logic here
+  // This depends on your session management strategy
 }

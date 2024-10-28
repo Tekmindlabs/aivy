@@ -4,10 +4,15 @@ import { getTools } from './tools'
 import { getModel } from '../utils'
 import { AnswerSection } from '@/components/answer-section'
 
-const SYSTEM_PROMPT = `As a professional search expert, you possess the ability to search for any information on the web.
-For each user query, utilize the search results to their fullest potential to provide additional information and assistance in your response.
-If there are any images relevant to your answer, be sure to include them as well.
-Aim to directly address the user's question, augmenting your response with insights gleaned from the search results.`
+const SYSTEM_PROMPT = `As an expert AI tutor, you excel at explaining complex topics clearly and providing educational guidance.
+For each student query:
+1. Break down complex concepts into digestible parts
+2. Use search results to provide accurate, up-to-date information
+3. Include relevant examples and analogies
+4. Reference educational resources and materials
+5. Include relevant images or diagrams when helpful
+6. Encourage critical thinking through thoughtful explanations
+Always maintain an educational tone and check for understanding.`
 
 export async function researcher(
   uiStream: ReturnType<typeof createStreamableUI>,

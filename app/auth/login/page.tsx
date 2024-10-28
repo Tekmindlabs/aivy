@@ -28,14 +28,16 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include' // Important: include credentials
       })
 
       if (response.ok) {
         const user = await response.json()
-        router.push('/')
+        // Force a hard navigation to reload the middleware
+        window.location.href = '/'
       } else {
         const error = await response.json()
-        setErrorMessage(error.error)
+        setErrorMessage(error.error || 'Invalid credentials')
       }
     } catch (error) {
       setErrorMessage('An error occurred. Please try again later.')
@@ -43,11 +45,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div>
-      <h1>Login</h1>
-      {errorMessage && <p className="error">{errorMessage}</p>}
-      <LoginForm onSubmit={handleSubmit} />
-      <p>Don't have an account? <Link href="/auth/signup">Sign up</Link></p>
+    <div className="flex min-h-screen flex-col items-center justify-center">
+      <div className="w-full max-w-md space-y-4 p-6">
+        <h1 className="text-2xl font-bold text-center">Login</h1>
+        {errorMessage && <p className="text-red-500 text-center">{errorMessage}</p>}
+        <LoginForm onSubmit={handleSubmit} />
+        <p className="text-center">
+          Don't have an account? <Link href="/auth/signup">Sign up</Link>
+        </p>
+      </div>
     </div>
   )
 }
