@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     
     // Set session cookie
     const cookieStore = cookies()
-    cookieStore.set('morphic_session', user.id, {
+    cookieStore.set('Aivy_session', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
