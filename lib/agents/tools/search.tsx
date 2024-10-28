@@ -4,6 +4,7 @@ import Exa from 'exa-js'
 import { searchSchema } from '@/lib/schema/search'
 import { SearchSection } from '@/components/search-section'
 import { ToolProps } from '.'
+import { MemoryService } from '@/lib/services/memory'
 import { sanitizeUrl } from '@/lib/utils'
 import {
   SearchResultImage,
@@ -13,20 +14,24 @@ import {
   SearXNGResult
 } from '@/lib/types'
 
+const memoryService = new MemoryService()
+
+
 export const searchTool = ({ uiStream, fullResponse }: ToolProps) =>
   tool({
-    description: 'Search the web for information',
+    description: 'Search the web and personal memories for information',
     parameters: searchSchema,
     execute: async ({
       query,
       max_results,
       search_depth,
       include_domains,
-      exclude_domains
+      exclude_domains,
+      user_id = 'anonymous'
     }) => {
       let hasError = false
-      // Append the search section
       const streamResults = createStreamableValue<string>()
+      
       uiStream.append(
         <SearchSection
           result={streamResults.value}
@@ -34,80 +39,68 @@ export const searchTool = ({ uiStream, fullResponse }: ToolProps) =>
         />
       )
 
-      // Tavily API requires a minimum of 5 characters in the query
-      const filledQuery =
-        query.length < 5 ? query + ' '.repeat(5 - query.length) : query
-      let searchResult: SearchResults
-      const searchAPI =
-        (process.env.SEARCH_API as 'tavily' | 'exa' | 'searxng') || 'tavily'
-
-      const effectiveSearchDepth =
-        searchAPI === 'searxng' &&
-        process.env.SEARXNG_DEFAULT_DEPTH === 'advanced'
-          ? 'advanced'
-          : search_depth || 'basic'
-
-      console.log(
-        `Using search API: ${searchAPI}, Search Depth: ${effectiveSearchDepth}`
-      )
-
       try {
-        if (searchAPI === 'searxng' && effectiveSearchDepth === 'advanced') {
-          // API route for advanced SearXNG search
-          const baseUrl =
-            process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-          const response = await fetch(`${baseUrl}/api/advanced-search`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query: filledQuery,
-              maxResults: max_results,
-              searchDepth: effectiveSearchDepth,
-              includeDomains: include_domains,
-              excludeDomains: exclude_domains
-            })
-          })
-          if (!response.ok) {
-            throw new Error(
-              `Advanced search API error: ${response.status} ${response.statusText}`
-            )
-          }
-          searchResult = await response.json()
-        } else {
-          searchResult = await (searchAPI === 'tavily'
-            ? tavilySearch
-            : searchAPI === 'exa'
-            ? exaSearch
-            : searxngSearch)(
-            filledQuery,
-            max_results,
-            effectiveSearchDepth === 'advanced' ? 'advanced' : 'basic',
-            include_domains,
-            exclude_domains
-          )
-        }
-      } catch (error) {
-        console.error('Search API error:', error)
-        hasError = true
-        searchResult = {
-          results: [],
-          query: filledQuery,
-          images: [],
-          number_of_results: 0
-        }
-      }
+        // Search memories first
+        const memories = await memoryService.searchMemories(query, user_id)
 
-      if (hasError) {
-        fullResponse = `An error occurred while searching for "${filledQuery}".`
+        // Perform web search
+        const webResults = await performWebSearch(
+          query,
+          max_results,
+          search_depth,
+          include_domains,
+          exclude_domains
+        )
+
+        // Combine results
+        const combinedResults: SearchResults = {
+          ...webResults,
+          memories,
+          number_of_results: (webResults.number_of_results || 0) + memories.length
+        }
+
+        streamResults.done(JSON.stringify(combinedResults))
+        return combinedResults
+
+      } catch (error) {
+        console.error('Search error:', error)
+        hasError = true
+        const emptyResults: SearchResults = {
+          results: [],
+          query,
+          images: [],
+          number_of_results: 0,
+          memories: []
+        }
+
+        fullResponse = `An error occurred while searching for "${query}".`
         uiStream.update(null)
         streamResults.done()
-        return searchResult
+        return emptyResults
       }
-
-      streamResults.done(JSON.stringify(searchResult))
-      return searchResult
     }
   })
+
+async function performWebSearch(
+  query: string,
+  maxResults: number = 10,
+  searchDepth: string,
+  includeDomains: string[] = [],
+  excludeDomains: string[] = []
+): Promise<SearchResults> {
+  const searchAPI = (process.env.SEARCH_API as 'tavily' | 'exa' | 'searxng') || 'tavily'
+  
+  switch (searchAPI) {
+    case 'tavily':
+      return await tavilySearch(query, maxResults, searchDepth, includeDomains, excludeDomains)
+    case 'exa':
+      return await exaSearch(query, maxResults, searchDepth, includeDomains, excludeDomains)
+    case 'searxng':
+      return await searxngSearch(query, maxResults, searchDepth, includeDomains, excludeDomains)
+    default:
+      throw new Error(`Unsupported search API: ${searchAPI}`)
+  }
+}
 
 async function tavilySearch(
   query: string,

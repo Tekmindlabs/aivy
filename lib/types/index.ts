@@ -107,3 +107,22 @@ export type SearXNGSearchResults = {
   number_of_results?: number
   query: string
 }
+
+// Add to existing types
+export interface SearchResults {
+  images: SearchResultImage[]
+  results: SearchResultItem[]
+  number_of_results?: number
+  query: string
+  memories?: Memory[] // Add this line
+}
+
+export interface Memory {
+  id: string
+  content: string
+  metadata?: {
+    chatId: string
+    timestamp: number
+  }
+  score?: number
+}
