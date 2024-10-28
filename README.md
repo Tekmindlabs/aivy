@@ -1,14 +1,14 @@
-# Morphic
+# Aivy
 
 An AI-powered search engine with a generative UI.
 
 > [!CAUTION]
-> Morphic is built with Vercel AI SDK RSC. AI SDK RSC is [experimental](https://sdk.vercel.ai/docs/getting-started/navigating-the-library#when-to-use-ai-sdk-rsc) and has some limitations. When using it in production, it is recommended to [migrate](https://sdk.vercel.ai/docs/ai-sdk-rsc/migrating-to-ui) to SDK UI.
+> Aivy is built with Vercel AI SDK RSC. AI SDK RSC is [experimental](https://sdk.vercel.ai/docs/getting-started/navigating-the-library#when-to-use-ai-sdk-rsc) and has some limitations. When using it in production, it is recommended to [migrate](https://sdk.vercel.ai/docs/ai-sdk-rsc/migrating-to-ui) to SDK UI.
 
 ![capture](/public/capture-240404_blk.png)
 
 > [!NOTE]
-> Please note that there are differences between this repository and the official website [morphic.sh](https://morphic.sh). The official website is a fork of this repository with additional features such as authentication, which are necessary for providing the service online. The core source code of Morphic resides in this repository, and it's designed to be easily built and deployed.
+> Please note that there are differences between this repository and the official website [Aivy.sh](https://Aivy.sh). The official website is a fork of this repository with additional features such as authentication, which are necessary for providing the service online. The core source code of Aivy resides in this repository, and it's designed to be easily built and deployed.
 
 ## 🗂️ Overview
 
@@ -24,15 +24,15 @@ An AI-powered search engine with a generative UI.
 - Search and answer using GenerativeUI
 - Understand user's questions
 - Search history functionality
-- Share search results ([Optional](https://github.com/miurla/morphic/blob/main/.env.local.example))
-- Video search support ([Optional](https://github.com/miurla/morphic/blob/main/.env.local.example))
+- Share search results ([Optional](https://github.com/miurla/Aivy/blob/main/.env.local.example))
+- Video search support ([Optional](https://github.com/miurla/Aivy/blob/main/.env.local.example))
 - Get answers from specified URLs
 - Use as a search engine [※](#-search-engine)
 - Support for providers other than OpenAI
   - Google Generative AI Provider
-  - Azure OpenAI Provider [※](https://github.com/miurla/morphic/issues/13)
-  - Anthropic Provider [※](https://github.com/miurla/morphic/pull/239)
-  - Ollama Provider [※](https://github.com/miurla/morphic/issues/215#issuecomment-2381902347)
+  - Azure OpenAI Provider [※](https://github.com/miurla/Aivy/issues/13)
+  - Anthropic Provider [※](https://github.com/miurla/Aivy/pull/239)
+  - Ollama Provider [※](https://github.com/miurla/Aivy/issues/215#issuecomment-2381902347)
   - Groq Provider
 - Local Redis support
 - SearXNG Search API support with customizable depth (basic or advanced)
@@ -58,13 +58,13 @@ An AI-powered search engine with a generative UI.
 Fork the repo to your Github account, then run the following command to clone the repo:
 
 ```
-git clone git@github.com:[YOUR_GITHUB_ACCOUNT]/morphic.git
+git clone git@github.com:[YOUR_GITHUB_ACCOUNT]/Aivy.git
 ```
 
 ### 2. Install dependencies
 
 ```
-cd morphic
+cd Aivy
 bun install
 ```
 
@@ -138,34 +138,34 @@ This will start the application in detached mode. You can access it at http://lo
 
 ## 🌐 Deploy
 
-Host your own live version of Morphic with Vercel or Cloudflare Pages.
+Host your own live version of Aivy with Vercel or Cloudflare Pages.
 
 ### Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmiurla%2Fmorphic&env=OPENAI_API_KEY,TAVILY_API_KEY,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmiurla%2FAivy&env=OPENAI_API_KEY,TAVILY_API_KEY,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN)
 
 ## 🔎 Search Engine
 
 ### Setting up the Search Engine in Your Browser
 
-If you want to use Morphic as a search engine in your browser, follow these steps:
+If you want to use Aivy as a search engine in your browser, follow these steps:
 
 1. Open your browser settings.
 2. Navigate to the search engine settings section.
 3. Select "Manage search engines and site search".
 4. Under "Site search", click on "Add".
 5. Fill in the fields as follows:
-   - **Search engine**: Morphic
-   - **Shortcut**: morphic
-   - **URL with %s in place of query**: `https://morphic.sh/search?q=%s`
+   - **Search engine**: Aivy
+   - **Shortcut**: Aivy
+   - **URL with %s in place of query**: `https://Aivy.sh/search?q=%s`
 6. Click "Add" to save the new search engine.
-7. Find "Morphic" in the list of site search, click on the three dots next to it, and select "Make default".
+7. Find "Aivy" in the list of site search, click on the three dots next to it, and select "Make default".
 
-This will allow you to use Morphic as your default search engine in the browser.
+This will allow you to use Aivy as your default search engine in the browser.
 
 ### Using SearXNG as an Alternative Search Backend
 
-Morphic now supports SearXNG as an alternative search backend with advanced search capabilities. To use SearXNG:
+Aivy now supports SearXNG as an alternative search backend with advanced search capabilities. To use SearXNG:
 
 1. Ensure you have Docker and Docker Compose installed on your system.
 2. In your `.env.local` file, set the following variables:
@@ -189,8 +189,8 @@ Morphic now supports SearXNG as an alternative search backend with advanced sear
    - `searxng-settings.yml`: This file contains the main configuration for SearXNG, including engine settings and server options.
    - `searxng-limiter.toml`: This file configures the rate limiting and bot detection features of SearXNG.
 
-4. Run `docker-compose up` to start the Morphic stack with SearXNG included.
-5. SearXNG will be available at `http://localhost:8080` and Morphic will use it as the search backend.
+4. Run `docker-compose up` to start the Aivy stack with SearXNG included.
+5. SearXNG will be available at `http://localhost:8080` and Aivy will use it as the search backend.
 
 #### Advanced Search Configuration
 
