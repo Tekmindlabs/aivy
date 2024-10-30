@@ -1,5 +1,6 @@
 'use client'
 
+// ================ Imports ================
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AI, UIState } from '../app/actions'
@@ -15,6 +16,7 @@ import { useAppState } from '../lib/utils/app-state'
 import { motion } from 'framer-motion'
 import { useAuth } from './auth/auth-provider'
 
+// ================ Types & Constants ================
 interface ChatPanelProps {
   messages: UIState
   query?: string
@@ -23,21 +25,19 @@ interface ChatPanelProps {
 const roles = ['Companion', 'Coach', 'advisor', 'Supporter', 'Assistant', 'Guide']
 const colors = ['text-blue-500', 'text-green-500', 'text-purple-500', 'text-pink-500', 'text-yellow-500', 'text-red-500']
 
+// ================ Logic Section ================
 function useTextMorph(items: string[], interval: number = 2000) {
   const [index, setIndex] = useState(0)
-
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % items.length)
     }, interval)
-
     return () => clearInterval(timer)
   }, [items, interval])
-
   return items[index]
 }
 
-export function ChatPanel({ messages, query }: ChatPanelProps) {
+function useChatLogic() {
   const [input, setInput] = useState('')
   const [showEmptyScreen, setShowEmptyScreen] = useState(false)
   const [, setMessages] = useUIState<typeof AI>()
@@ -46,17 +46,15 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
   const { submit } = useActions()
   const router = useRouter()
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const isFirstRender = useRef(true) // For development environment
-  const { user } = useAuth();
-
-  const [isComposing, setIsComposing] = useState(false) // Composition state
-  const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
+  const isFirstRender = useRef(true)
+  const { user } = useAuth()
+  const [isComposing, setIsComposing] = useState(false)
+  const [enterDisabled, setEnterDisabled] = useState(false)
 
   const morphingRole = useTextMorph(roles)
   const morphingColor = useTextMorph(colors)
 
   const handleCompositionStart = () => setIsComposing(true)
-
   const handleCompositionEnd = () => {
     setIsComposing(false)
     setEnterDisabled(true)
@@ -68,8 +66,6 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
   async function handleQuerySubmit(query: string, formData?: FormData) {
     setInput(query)
     setIsGenerating(true)
-
-    // Add user message to UI state
     setMessages(currentMessages => [
       ...currentMessages,
       {
@@ -77,8 +73,6 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
         component: <UserMessage message={query} userId={user?.id} />
       }
     ])
-
-    // Submit and get response message
     const data = formData || new FormData()
     if (!formData) {
       data.append('input', query)
@@ -93,23 +87,6 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
     await handleQuerySubmit(input, formData)
   }
 
-  // if query is not empty, submit the query
-  useEffect(() => {
-    if (isFirstRender.current && query && query.trim().length > 0) {
-      handleQuerySubmit(query)
-      isFirstRender.current = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
-
-  useEffect(() => {
-    const lastMessage = aiMessage.messages.slice(-1)[0]
-    if (lastMessage?.type === 'followup' || lastMessage?.type === 'inquiry') {
-      setIsGenerating(false)
-    }
-  }, [aiMessage, setIsGenerating])
-
-  // Clear messages
   const handleClear = () => {
     setIsGenerating(false)
     setMessages([])
@@ -119,11 +96,64 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
   }
 
   useEffect(() => {
-    // focus on input when the page loads
+    const lastMessage = aiMessage.messages.slice(-1)[0]
+    if (lastMessage?.type === 'followup' || lastMessage?.type === 'inquiry') {
+      setIsGenerating(false)
+    }
+  }, [aiMessage, setIsGenerating])
+
+  useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
-  // If there are messages and the new button has not been pressed, display the new Button
+  return {
+    input,
+    setInput,
+    showEmptyScreen,
+    setShowEmptyScreen,
+    isGenerating,
+    inputRef,
+    isComposing,
+    enterDisabled,
+    morphingRole,
+    morphingColor,
+    handleCompositionStart,
+    handleCompositionEnd,
+    handleSubmit,
+    handleQuerySubmit,
+    handleClear,
+    isFirstRender
+  }
+}
+
+// ================ UI Component ================
+export function ChatPanel({ messages, query }: ChatPanelProps) {
+  const {
+    input,
+    setInput,
+    showEmptyScreen,
+    setShowEmptyScreen,
+    isGenerating,
+    inputRef,
+    isComposing,
+    enterDisabled,
+    morphingRole,
+    morphingColor,
+    handleCompositionStart,
+    handleCompositionEnd,
+    handleSubmit,
+    handleQuerySubmit,
+    handleClear,
+    isFirstRender
+  } = useChatLogic()
+
+  useEffect(() => {
+    if (isFirstRender.current && query && query.trim().length > 0) {
+      handleQuerySubmit(query)
+      isFirstRender.current = false
+    }
+  }, [query])
+
   if (messages.length > 0) {
     return (
       <div className="fixed bottom-2 md:bottom-8 left-0 right-0 flex justify-center items-center mx-auto pointer-events-none">
@@ -148,14 +178,10 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
   }
 
   return (
-    <div
-      className={
-        'fixed bottom-8 left-0 right-0 top-10 mx-auto h-screen flex flex-col items-center justify-center'
-      }
-    >
+    <div className={'fixed bottom-8 left-0 right-0 top-10 mx-auto h-screen flex flex-col items-center justify-center'}>
       <div className="flex flex-col items-center justify-center mb-8">
         <h1 className="text-4xl md:text-6xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-          I'm Aivy,
+          I&apos;m Aivy,
         </h1>
         <div className="text-2xl md:text-4xl font-semibold" aria-live="polite">
           <span className="text-gray-600 dark:text-gray-400">Your personal AI </span>
@@ -190,12 +216,7 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
               setShowEmptyScreen(e.target.value.length === 0)
             }}
             onKeyDown={e => {
-              if (
-                e.key === 'Enter' &&
-                !e.shiftKey &&
-                !isComposing &&
-                !enterDisabled
-              ) {
+              if (e.key === 'Enter' && !e.shiftKey && !isComposing && !enterDisabled) {
                 if (input.trim().length === 0) {
                   e.preventDefault()
                   return
@@ -211,8 +232,7 @@ export function ChatPanel({ messages, query }: ChatPanelProps) {
               const initialBorder = 32
               const multiple = (height - initialHeight) / 20
               const newBorder = initialBorder - 4 * multiple
-              inputRef.current.style.borderRadius =
-                Math.max(8, newBorder) + 'px'
+              inputRef.current.style.borderRadius = Math.max(8, newBorder) + 'px'
             }}
             onFocus={() => setShowEmptyScreen(true)}
             onBlur={() => setShowEmptyScreen(false)}
