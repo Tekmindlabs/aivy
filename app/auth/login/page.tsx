@@ -1,37 +1,28 @@
 'use client'
-
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+<<<<<<< Updated upstream
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import Image from 'next/image'
 
+=======
+>>>>>>> Stashed changes
 
 export default function LoginPage() {
-  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setErrorMessage('')
 
-    const formData = new FormData(event.currentTarget)
-    const email = formData.get('email')?.toString()
-    const password = formData.get('password')?.toString()
-
-    if (!email || !password) {
-      setErrorMessage('Please fill in all fields')
-      setIsLoading(false)
-      return
-    }
-
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('https://aivy.fabriiq.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,20 +31,22 @@ export default function LoginPage() {
         credentials: 'include'
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        window.location.href = '/'
+        router.push('/')
       } else {
-        const error = await response.json()
-        setErrorMessage(error.error || 'Invalid credentials')
+        console.error('Login failed:', data)
+        setErrorMessage(data.error || 'Invalid credentials')
       }
     } catch (error) {
+      console.error('Login error:', error)
       setErrorMessage('An error occurred. Please try again later.')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   return (
+<<<<<<< Updated upstream
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
@@ -99,6 +92,49 @@ export default function LoginPage() {
           </p>
         </CardFooter>
       </Card>
+=======
+    <div className="min-h-screen flex items-center justify-center">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md p-8">
+        <h1 className="text-2xl font-bold mb-6">Login</h1>
+        
+        {errorMessage && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {errorMessage}
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        >
+          Login
+        </button>
+      </form>
+>>>>>>> Stashed changes
     </div>
   )
 }

@@ -18,7 +18,10 @@ export const Header: React.FC = () => {
   const handleSignOut = async () => {
     try {
       const response = await fetch('/api/auth/logout', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
       if (response.ok) {
         // Force a hard reload to clear client-side state
@@ -50,7 +53,11 @@ export const Header: React.FC = () => {
             <DropdownMenuItem onClick={() => router.push('/profile')}>
               Profile
             </DropdownMenuItem>
+<<<<<<< Updated upstream
             <DropdownMenuItem onClick={() => router.push('/auth/logout')}>
+=======
+            <DropdownMenuItem onClick={handleSignOut}>
+>>>>>>> Stashed changes
               Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>

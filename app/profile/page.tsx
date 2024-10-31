@@ -3,7 +3,11 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+<<<<<<< Updated upstream
 import { useState } from 'react'
+=======
+import { useState, useEffect } from 'react'
+>>>>>>> Stashed changes
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
 export default function ProfilePage() {
@@ -23,6 +27,34 @@ export default function ProfilePage() {
 
   const [showAlert, setShowAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
+<<<<<<< Updated upstream
+=======
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch('/api/user/profile')
+        if (response.ok) {
+          const data = await response.json()
+          setFormData({
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            age: data.age || '',
+            grade: data.grade || '',
+            learningPreferences: data.learningPreferences || '',
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProfileData()
+  }, [])
+>>>>>>> Stashed changes
 
   const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,9 +65,20 @@ export default function ProfilePage() {
         body: JSON.stringify(formData)
       })
       
+<<<<<<< Updated upstream
       if (response.ok) {
         setAlertMessage('Profile updated successfully')
         setShowAlert(true)
+=======
+      const data = await response.json()
+      
+      if (response.ok) {
+        setFormData(data.profile)
+        setAlertMessage('Profile updated successfully')
+        setShowAlert(true)
+      } else {
+        throw new Error(data.error)
+>>>>>>> Stashed changes
       }
     } catch (error) {
       setAlertMessage('Failed to update profile')
@@ -43,6 +86,7 @@ export default function ProfilePage() {
     }
   }
 
+<<<<<<< Updated upstream
 const handlePasswordChange = async (e: React.FormEvent) => {
   e.preventDefault()
   try {
@@ -54,6 +98,19 @@ const handlePasswordChange = async (e: React.FormEvent) => {
         newPassword: passwordData.newPassword
       })
     })
+=======
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/api/user/password', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      })
+>>>>>>> Stashed changes
 
       if (response.ok) {
         setAlertMessage('Password updated successfully')
@@ -70,6 +127,13 @@ const handlePasswordChange = async (e: React.FormEvent) => {
     }
   }
 
+<<<<<<< Updated upstream
+=======
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+>>>>>>> Stashed changes
   return (
     <div className="container mx-auto p-6 mt-16">
       <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
