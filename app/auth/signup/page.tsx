@@ -1,16 +1,24 @@
 'use client'
 
-import SignUpForm from '@/components/auth/signup-form'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 
 export default function SignUpPage() {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setIsLoading(true)
+    setErrorMessage('')
+    setSuccessMessage('')
 
     const formData = new FormData(event.currentTarget)
     const username = formData.get('username')?.toString()
@@ -19,6 +27,7 @@ export default function SignUpPage() {
 
     if (!username || !email || !password) {
       setErrorMessage('Please fill in all fields')
+      setIsLoading(false)
       return
     }
 
@@ -45,15 +54,61 @@ export default function SignUpPage() {
     } catch (error) {
       setErrorMessage('An error occurred. Please try again later.')
       setSuccessMessage('')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <div>
-      <h1>Sign Up</h1>
-      {errorMessage && <p className="error">{errorMessage}</p>}
-      {successMessage && <p className="success">{successMessage}</p>}
-      <SignUpForm onSubmit={handleSubmit} />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-4">
+            <img src="/placeholder.svg?height=64&width=64" alt="Aivy AI Logo" className="h-16 w-16" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
+          <CardDescription className="text-center">
+            Sign up to start chatting with Aivy, your AI companion
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {errorMessage && (
+            <div className="text-red-500 text-sm text-center mb-4">
+              {errorMessage}
+            </div>
+          )}
+          {successMessage && (
+            <div className="text-green-500 text-sm text-center mb-4">
+              {successMessage}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" name="username" type="text" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" name="password" type="password" required />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing up...' : 'Sign Up'}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400 w-full">
+            Already have an account?{' '}
+            <Link href="/auth/login" className="font-semibold text-primary hover:underline">
+              Log in
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

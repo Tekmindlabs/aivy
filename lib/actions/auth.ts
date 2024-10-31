@@ -80,6 +80,5 @@ export async function login(email: string, password: string): Promise<User> {
 }
 
 export async function logout(): Promise<void> {
-  // Implement session clearing logic here
-  // This depends on your session management strategy
+  const redis = await getRedisClient();
 }
