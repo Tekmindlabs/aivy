@@ -11,6 +11,9 @@ import { Sidebar } from '../components/sidebar'
 import { Toaster } from '../components/ui/sonner'
 import { AppStateProvider } from '../lib/utils/app-state'
 import { AuthProvider } from '../components/auth/auth-provider'
+import { useEffect } from 'react'
+import { useAuth } from '../components/auth/auth-provider' // Make sure this import exists
+import { toast } from 'sonner'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -51,7 +54,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn('font-sans antialiased', fontSans.variable)}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#000000" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      </head>
+      <body className={cn('font-sans antialiased min-h-screen flex flex-col', fontSans.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

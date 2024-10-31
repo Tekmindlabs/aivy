@@ -245,7 +245,18 @@ async function searxngSearch(
         `SearXNG API error: ${response.status} ${response.statusText} - ${errorText}`
       )
     }
+// In lib/agents/tools/search.tsx
+if (!process.env.TAVILY_API_KEY && searchApi === 'tavily') {
+  throw new Error('Tavily API key is not configured');
+}
 
+if (!process.env.SEARXNG_API_URL && searchApi === 'searxng') {
+  throw new Error('SearXNG API URL is not configured');
+}
+
+if (!process.env.EXA_API_KEY && searchApi === 'exa') {
+  throw new Error('Exa API key is not configured');
+}
     const data: SearXNGResponse = await response.json()
 
     // Separate general results and image results, and limit to maxResults

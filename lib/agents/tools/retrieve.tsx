@@ -5,7 +5,7 @@ import { DefaultSkeleton } from '@/components/default-skeleton'
 import { SearchResults as SearchResultsType } from '@/lib/types'
 import RetrieveSection from '@/components/retrieve-section'
 
-const CONTENT_CHARACTER_LIMIT = 10000
+const CONTENT_CHARACTER_LIMIT = 5000
 
 async function fetchJinaReaderData(
   url: string

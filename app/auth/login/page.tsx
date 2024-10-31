@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import Image from 'next/image'
+
 
 export default function LoginPage() {
   const router = useRouter()
@@ -56,8 +58,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <img src="/placeholder.svg?height=64&width=64" alt="Aivy AI Logo" className="h-16 w-16" />
-          </div>
+<Image 
+  src="/placeholder.svg" 
+  alt="Aivy AI Logo" 
+  width={64} 
+  height={64} 
+  className="h-16 w-16"
+/>          </div>
           <CardTitle className="text-2xl font-bold text-center">Aivy: Your AI Companion</CardTitle>
           <CardDescription className="text-center">
             Sign in to your account to chat with Aivy
@@ -85,7 +92,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter>
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 w-full">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="font-semibold text-primary hover:underline">
               Sign up
             </Link>

@@ -1,11 +1,12 @@
 export const AIVY_ROLES = [
-    'Companion',
-    'Coach',
-    'Advisor',
-    'Supporter',
-    'Assistant',
-    'Guide'
-  ] as const
+  'Companion',
+  'Expert',
+  'Analyst', 
+  'Researcher',
+  'Fact Checker',
+  'Assistant',
+  'Academic'
+] as const
   
   export const AIVY_MESSAGES = {
     welcome: "Hi, I'm Aivy, your personal AI companion.",
