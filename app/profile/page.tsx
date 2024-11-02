@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useState, useEffect } from 'react'
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -12,13 +18,13 @@ export default function ProfilePage() {
     lastName: '',
     age: '',
     grade: '',
-    learningPreferences: '',
+    learningPreferences: ''
   })
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
-    confirmPassword: '',
+    confirmPassword: ''
   })
 
   const [showAlert, setShowAlert] = useState(false)
@@ -36,7 +42,7 @@ export default function ProfilePage() {
             lastName: data.lastName || '',
             age: data.age || '',
             grade: data.grade || '',
-            learningPreferences: data.learningPreferences || '',
+            learningPreferences: data.learningPreferences || ''
           })
         }
       } catch (error) {
@@ -57,9 +63,9 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
-      
+
       const data = await response.json()
-      
+
       if (response.ok) {
         setFormData(data.profile)
         setAlertMessage('Profile updated successfully')
@@ -75,6 +81,14 @@ export default function ProfilePage() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Add validation for matching passwords
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setAlertMessage('New passwords do not match')
+      setShowAlert(true)
+      return
+    }
+
     try {
       const response = await fetch('/api/user/password', {
         method: 'PATCH',
@@ -85,17 +99,30 @@ export default function ProfilePage() {
         })
       })
 
-      if (response.ok) {
-        setAlertMessage('Password updated successfully')
-        setShowAlert(true)
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update password')
       }
+
+      // Clear password fields
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      })
+
+      setAlertMessage('Password updated successfully. Please login again.')
+      setShowAlert(true)
+
+      // Redirect to login after a short delay
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 2000)
     } catch (error) {
-      setAlertMessage('Failed to update password')
+      setAlertMessage(
+        error instanceof Error ? error.message : 'Failed to update password'
+      )
       setShowAlert(true)
     }
   }
@@ -116,33 +143,44 @@ export default function ProfilePage() {
         <TabsContent value="personal">
           <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Input 
+              <Input
                 placeholder="First Name"
                 value={formData.firstName}
-                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                onChange={e =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
               />
-              <Input 
+              <Input
                 placeholder="Last Name"
                 value={formData.lastName}
-                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                onChange={e =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
               />
             </div>
-            <Input 
+            <Input
               type="number"
               placeholder="Age"
               value={formData.age}
-              onChange={(e) => setFormData({...formData, age: e.target.value})}
+              onChange={e => setFormData({ ...formData, age: e.target.value })}
             />
-            <Input 
+            <Input
               placeholder="Class/Grade"
               value={formData.grade}
-              onChange={(e) => setFormData({...formData, grade: e.target.value})}
+              onChange={e =>
+                setFormData({ ...formData, grade: e.target.value })
+              }
             />
-            <textarea 
+            <textarea
               placeholder="Learning Preferences"
               className="w-full min-h-[100px] rounded-md border p-2"
               value={formData.learningPreferences}
-              onChange={(e) => setFormData({...formData, learningPreferences: e.target.value})}
+              onChange={e =>
+                setFormData({
+                  ...formData,
+                  learningPreferences: e.target.value
+                })
+              }
             />
             <Button type="submit">Save Changes</Button>
           </form>
@@ -150,23 +188,38 @@ export default function ProfilePage() {
 
         <TabsContent value="password">
           <form onSubmit={handlePasswordChange} className="space-y-4">
-            <Input 
+            <Input
               type="password"
               placeholder="Current Password"
               value={passwordData.currentPassword}
-              onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+              onChange={e =>
+                setPasswordData({
+                  ...passwordData,
+                  currentPassword: e.target.value
+                })
+              }
             />
-            <Input 
+            <Input
               type="password"
               placeholder="New Password"
               value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+              onChange={e =>
+                setPasswordData({
+                  ...passwordData,
+                  newPassword: e.target.value
+                })
+              }
             />
-            <Input 
+            <Input
               type="password"
               placeholder="Confirm New Password"
               value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+              onChange={e =>
+                setPasswordData({
+                  ...passwordData,
+                  confirmPassword: e.target.value
+                })
+              }
             />
             <Button type="submit">Update Password</Button>
           </form>
