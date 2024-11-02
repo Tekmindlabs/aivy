@@ -32,7 +32,7 @@ export function ChatShare({ chatId, className }: ChatShareProps) {
     startTransition(() => {
       setOpen(true)
     })
-    const result = await shareChat(chatId)
+const result = await shareChat(chatId, 'anonymous')
     if (!result) {
       toast.error('Failed to share chat')
       return

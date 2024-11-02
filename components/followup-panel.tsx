@@ -8,12 +8,14 @@ import type { AI } from '@/app/actions'
 import { UserMessage } from './user-message'
 import { ArrowRight } from 'lucide-react'
 import { useAppState } from '@/lib/utils/app-state'
+import { Switch } from './ui/switch'  // Add this import
 
 export function FollowupPanel() {
   const [input, setInput] = useState('')
   const { submit } = useActions()
   const [, setMessages] = useUIState<typeof AI>()
   const { isGenerating, setIsGenerating } = useAppState()
+  const [useWebSearch, setUseWebSearch] = useState(false)  // Add this state
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -24,6 +26,8 @@ export function FollowupPanel() {
     setInput('')
 
     const formData = new FormData(event.currentTarget as HTMLFormElement)
+    // Add web search state to form data
+    formData.append('useWebSearch', useWebSearch.toString())
 
     const userMessage = {
       id: Date.now(),
@@ -40,27 +44,44 @@ export function FollowupPanel() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="relative flex items-center space-x-1"
-    >
-      <Input
-        type="text"
-        name="input"
-        placeholder="Ask a follow-up question..."
-        value={input}
-        className="pr-14 h-12"
-        onChange={e => setInput(e.target.value)}
-      />
-      <Button
-        type="submit"
-        size={'icon'}
-        disabled={input.length === 0 || isGenerating}
-        variant={'ghost'}
-        className="absolute right-1"
+    <div className="flex flex-col space-y-2">
+      <form
+        onSubmit={handleSubmit}
+        className="relative flex items-center space-x-1"
       >
-        <ArrowRight size={20} />
-      </Button>
-    </form>
+        <Input
+          type="text"
+          name="input"
+          placeholder="Ask a follow-up question..."
+          value={input}
+          className="pr-14 h-12"
+          onChange={e => setInput(e.target.value)}
+        />
+        <Button
+          type="submit"
+          size={'icon'}
+          disabled={input.length === 0 || isGenerating}
+          variant={'ghost'}
+          className="absolute right-1"
+        >
+          <ArrowRight size={20} />
+        </Button>
+      </form>
+      
+      {/* Add web search toggle */}
+      <div className="flex items-center justify-end space-x-2">
+        <Switch
+          id="followup-web-search"
+          checked={useWebSearch}
+          onCheckedChange={setUseWebSearch}
+        />
+        <label 
+          htmlFor="followup-web-search" 
+          className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
+        >
+          Enable Web Search
+        </label>
+      </div>
+    </div>
   )
 }

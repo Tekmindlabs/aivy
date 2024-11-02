@@ -1,35 +1,62 @@
 import { NextResponse } from 'next/server'
-import { login } from '@/lib/actions/auth'
-import { cookies } from 'next/headers'
+import bcrypt from 'bcryptjs'
+import { sign } from 'jsonwebtoken'
+import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS } from '@/lib/auth/constants'
+import { rateLimiter } from '@/lib/auth/middleware'
+import { getRedisClient } from '@/lib/redis/config'
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json()
+  // Apply rate limiting
+  const rateLimit = rateLimiter(request as any)
+  if (rateLimit) return rateLimit
 
   try {
-    const user = await login(email, password)
-    
-    // Set session cookie
-    const cookieStore = cookies()
-    cookieStore.set('Aivy_session', user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7 // 1 week
-    })
+    const { email, password } = await request.json()
+    const redis = await getRedisClient()
 
-    return new NextResponse(JSON.stringify(user), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    // Get user ID from email index
+    const emailLookup = await redis.hgetall(`users:email:${email}`)
+    if (!emailLookup || !emailLookup.userId) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      )
+    }
+
+    // Get user data using the ID
+    const userData = await redis.hgetall(`users:${emailLookup.userId}`)
+    if (!userData) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      )
+    }
+
+    // Verify password
+    const isValid = await bcrypt.compare(password, userData.passwordHash)
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      )
+    }
+
+    // Generate JWT token
+    const token = sign(
+      { userId: userData.id, email: userData.email },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    )
+
+    const response = NextResponse.json({ success: true })
+    response.cookies.set(AUTH_COOKIE_NAME, token, AUTH_COOKIE_OPTIONS)
+
+    return response
   } catch (error) {
-    return new NextResponse(JSON.stringify({ error: (error as Error).message }), {
-      status: 401, // Changed from 500 to 401 for auth errors
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    console.error('Login error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

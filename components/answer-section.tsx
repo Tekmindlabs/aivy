@@ -24,14 +24,14 @@ export function AnswerSection({
   }, [data])
 
   return (
-    <div>
-      {content.length > 0 ? (
-        <Section title={hasHeader ? 'Answer' : undefined}>
-          <BotMessage content={content} />
-        </Section>
-      ) : (
-        <DefaultSkeleton />
-      )}
-    </div>
+    <div className="mb-16"> {/* Add margin bottom */}
+  {content.length > 0 ? (
+    <Section title={hasHeader ? 'Answer' : undefined}>
+      <BotMessage content={content} />
+    </Section>
+  ) : (
+    <DefaultSkeleton />
+  )}
+</div>
   )
 }

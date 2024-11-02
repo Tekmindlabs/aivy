@@ -41,44 +41,45 @@ export async function signUp(username: string, email: string, password: string):
   }
 }
 
-export async function login(email: string, password: string): Promise<User> {
-  const redis = await getRedisClient();
+export interface User {
+  id: string
+  email: string
+  name: string
+  password: string
+}
 
+export async function login(email: string, password: string): Promise<User> {
+  const redis = await getRedisClient()
+  
   try {
-    // Get userId from email lookup
-    const userIdObj = await redis.hgetall<Record<string, string>>(`users:email:${email}`);
-    if (!userIdObj || !userIdObj.userId) {
-      throw new Error('Invalid email or password');
+    console.log('Attempting login for email:', email)
+    
+    // Get user ID from email index
+    const userId = await redis.get(`email:${email}`)
+    if (!userId) {
+      console.log('User not found for email:', email)
+      throw new Error('Invalid credentials')
     }
 
     // Get user data
-    const userObj = await redis.hgetall<Record<string, string>>(`users:${userIdObj.userId}`);
-    if (!userObj) {
-      throw new Error('Invalid email or password');
+    const userData = await redis.get(`user:${userId}`)
+    if (!userData) {
+      console.log('User data not found for ID:', userId)
+      throw new Error('Invalid credentials')
     }
 
+    const user = JSON.parse(userData) as User
+    
     // Verify password
-    const isValidPassword = await bcrypt.compare(password, userObj.passwordHash);
-    if (!isValidPassword) {
-      throw new Error('Invalid email or password');
+    const passwordMatch = await bcrypt.compare(password, user.password)
+    if (!passwordMatch) {
+      console.log('Password mismatch for user:', email)
+      throw new Error('Invalid credentials')
     }
 
-    // Convert stored date string back to Date object
-    const user: User = {
-      id: userObj.id,
-      username: userObj.username,
-      email: userObj.email,
-      passwordHash: userObj.passwordHash,
-      createdAt: new Date(userObj.createdAt)
-    };
-
-    return user;
+    return user
   } catch (error) {
-    console.error('Error during login:', error);
-    throw error;
+    console.error('Login error:', error)
+    throw error
   }
-}
-
-export async function logout(): Promise<void> {
-  const redis = await getRedisClient();
 }

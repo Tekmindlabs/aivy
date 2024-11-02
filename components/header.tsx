@@ -4,11 +4,11 @@ import { IconLogo } from './ui/icons'
 import { cn } from '@/lib/utils'
 import HistoryContainer from './history-container'
 import { Avatar, AvatarFallback } from './ui/avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
 } from './ui/dropdown-menu'
 import { useRouter } from 'next/navigation'
 
@@ -18,7 +18,10 @@ export const Header: React.FC = () => {
   const handleSignOut = async () => {
     try {
       const response = await fetch('/api/auth/logout', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
       if (response.ok) {
         // Force a hard reload to clear client-side state
@@ -37,7 +40,7 @@ export const Header: React.FC = () => {
           <span className="sr-only">Aivy</span>
         </a>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex gap-0.5">
         <ModeToggle />
         <HistoryContainer location="header" />
         <DropdownMenu>
@@ -47,6 +50,9 @@ export const Header: React.FC = () => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => router.push('/profile')}>
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut}>
               Sign Out
             </DropdownMenuItem>

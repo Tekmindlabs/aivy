@@ -374,7 +374,7 @@ async function crawlPage(
       extractedText = `${result.title}\n\n${ogTitle}\n\n${metaDescription}\n\n${ogDescription}\n\n${metaKeywords}\n\n${extractedText}`
 
       // Limit the extracted text to 10000 characters
-      extractedText = extractedText.substring(0, 10000)
+      extractedText = extractedText.substring(0, 5000)
 
       // Highlight query terms in the content
       result.content = highlightQueryTerms(extractedText, query)

@@ -1,29 +1,21 @@
 import { NextResponse } from 'next/server'
-import { logout } from '@/lib/actions/auth'
-import { cookies } from 'next/headers'
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    await logout()
+    // Clear any auth cookies/session
+    const response = NextResponse.json(
+      { success: true },
+      { status: 200 }
+    )
     
-    // Clear the session cookie
-    const response = new NextResponse(null, {
-      status: 204,
-    })
-    
-    // Remove the auth cookie
-    response.cookies.set('auth-token', '', {
-      expires: new Date(0),
-      path: '/',
-    })
+    // Clear the auth cookie if you're using one
+    response.cookies.delete('auth-token') // adjust cookie name as needed
     
     return response
   } catch (error) {
-    return new NextResponse(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    return NextResponse.json(
+      { error: 'Logout failed' },
+      { status: 500 }
+    )
   }
 }

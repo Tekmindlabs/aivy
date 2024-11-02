@@ -9,10 +9,10 @@ For each student query:
 1. Break down complex concepts into digestible parts
 2. Use search results to provide accurate, up-to-date information
 3. Include relevant examples and analogies
-4. Reference educational resources and materials
+4. Always verify information from multiple sources
 5. Include relevant images or diagrams when helpful
 6. Encourage critical thinking through thoughtful explanations
-Always maintain an educational tone and check for understanding.`
+7. Always maintain an educational tone and check for understanding.`
 
 export async function researcher(
   uiStream: ReturnType<typeof createStreamableUI>,
